@@ -18,10 +18,7 @@ package com.gigaspaces.internal.server.space;
 
 import com.gigaspaces.admin.ManagerClusterType;
 import com.gigaspaces.admin.demote.DemoteFailedException;
-import com.gigaspaces.admin.quiesce.DefaultQuiesceToken;
-import com.gigaspaces.admin.quiesce.QuiesceException;
-import com.gigaspaces.admin.quiesce.QuiesceState;
-import com.gigaspaces.admin.quiesce.QuiesceStateChangedEvent;
+import com.gigaspaces.admin.quiesce.*;
 import com.gigaspaces.annotation.SupportCodeChange;
 import com.gigaspaces.attribute_store.AttributeStore;
 import com.gigaspaces.attribute_store.SharedLock;
@@ -93,6 +90,7 @@ import com.gigaspaces.internal.server.space.recovery.direct_persistency.DirectPe
 import com.gigaspaces.internal.server.space.recovery.direct_persistency.DirectPersistencyRecoveryHelper;
 import com.gigaspaces.internal.server.space.recovery.direct_persistency.StorageConsistencyModes;
 import com.gigaspaces.internal.server.space.recovery.strategy.SpaceRecoverStrategy;
+import com.gigaspaces.internal.server.space.repartitioning.*;
 import com.gigaspaces.internal.server.space.suspend.SuspendTypeChangedInternalListener;
 import com.gigaspaces.internal.server.space.tiered_storage.TieredStorageUtils;
 import com.gigaspaces.internal.server.storage.EntryTieredMetaData;
@@ -4027,8 +4025,8 @@ public class SpaceImpl extends AbstractService implements IRemoteSpace, IInterna
         _demoteHandler.demote(maxSuspendTime, unit);
     }
 
-    public void waitForDrain(long timeoutMs, long minTimeToWait, boolean isDemote, Logger logger) throws TimeoutException {
-        WaitForDrainUtils.waitForDrain(this, timeoutMs, minTimeToWait, isDemote, logger);
+    public void waitForDrain(long timeoutMs, long minTimeToWait, boolean isComprehensive, Logger logger) throws TimeoutException {
+        WaitForDrainUtils.waitForDrain(this, timeoutMs, minTimeToWait, isComprehensive, logger);
     }
 
     public SuspendType addSpaceSuspendTypeListener(SuspendTypeChangedInternalListener listener) {
@@ -4061,6 +4059,62 @@ public class SpaceImpl extends AbstractService implements IRemoteSpace, IInterna
             throw new IllegalStateException("Nothing to update, CHUNKS_SPACE_ROUTING is disabled");
         }
     }
+
+    public void copyChunks(CopyChunksRequestInfo requestInfo) {
+        String step = "copy-chunks";
+        String key = "partition " + getPartitionIdOneBased();
+
+        try {
+            ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.IN_PROGRESS.toString());
+            CopyChunks copyChunks = new CopyChunks();
+            CopyChunksResponseInfo responseInfo = copyChunks.execute(this, requestInfo);
+            if (responseInfo.getException() != null){
+                ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.FAIL.toString());
+            } else {
+                ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.SUCCESS.toString());
+                _logger.info("Instance " + _spaceMemberName + " copied " + responseInfo.getMovedToPartition() + " chunks successfully");
+            }
+        } catch (Throwable e) {
+            _logger.warn("Instance " + _spaceMemberName + " failed to copy chunks", e);
+            ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.FAIL.toString());
+        }
+    }
+
+    public void drainOnScale(DrainRequestInfo requestInfo)  {
+        String step = "drain";
+        String key = "partition " + getPartitionIdOneBased();
+        try {
+            ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.IN_PROGRESS.toString());
+            WaitForDrainUtils.waitForDrain(this, requestInfo.getTimeout(), requestInfo.getMinTimeToWait(), requestInfo.isComprehensive(), null);
+            ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.SUCCESS.toString());
+            _logger.info("Instance " + _spaceMemberName + " drained successfully");
+        } catch (TimeoutException e) {
+            ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.FAIL.toString());
+        } catch (Throwable e) {
+            _logger.warn("Instance " + _spaceMemberName + " failed to drain", e);
+            ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.FAIL.toString());
+        }
+    }
+
+    public void deleteChunks(DeleteChunksRequestInfo requestInfo)  {
+        String step = "delete-chunks";
+        String key = "partition " + getPartitionIdOneBased();
+        try {
+            ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.IN_PROGRESS.toString());
+            DeleteChunks deleteChunks = new DeleteChunks();
+            DeleteChunksResponseInfo responseInfo = (DeleteChunksResponseInfo) deleteChunks.execute(this, requestInfo);
+            if (responseInfo.getException() != null){
+                _logger.warn("Instance " + _spaceMemberName + " failed to delete chunks", responseInfo.getException());
+                ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.FAIL.toString());
+            } else{
+                ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.SUCCESS.toString());
+                _logger.info("Instance " + _spaceMemberName + " deleted chunks successfully");
+            }
+        } catch (Throwable e) {
+            ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.FAIL.toString());
+        }
+    }
+
 
     private void setOrUpdateBlobstoreRocksDBAllowDuplicateUIDs(SpaceConfig spaceConfig, SpaceConfigReader spaceConfigReader) {
         String rocksDBStoreHandlerClassName = "com.gigaspaces.blobstore.rocksdb.RocksDBBlobStoreHandler";

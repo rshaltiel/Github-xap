@@ -1009,4 +1009,8 @@ public interface Constants {
         }
     }
 
+    public interface Scale{
+        String SCALE_OUT_STEPS_INTERVAL = "com.gs.manager.scale_out.step-interval";
+        String SCALE_OUT_STEPS_INTERVAL_DEFAULT = "2000";
+    }
 }
