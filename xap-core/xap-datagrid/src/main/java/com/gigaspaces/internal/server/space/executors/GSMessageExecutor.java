@@ -9,10 +9,8 @@ import com.gigaspaces.internal.space.requests.SpaceRequestInfo;
 import com.gigaspaces.internal.space.responses.SpaceResponseInfo;
 import com.j_spaces.core.client.EntryAlreadyInSpaceException;
 import net.jini.core.lease.Lease;
-import net.jini.core.transaction.CannotAbortException;
-import net.jini.core.transaction.CannotCommitException;
-import net.jini.core.transaction.Transaction;
-import net.jini.core.transaction.UnknownTransactionException;
+import net.jini.core.transaction.*;
+import net.jini.core.transaction.server.TransactionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +35,10 @@ public class GSMessageExecutor extends SpaceActionExecutor {
         SpaceDocument entry = null;
         CDCInfo cdcInfo = null;
         boolean aborted = false;
-        Transaction transaction = requestInfo.getTx();
-        try {//todo: add embedded mahalo transaction to space impl and use it from here
+        TransactionManager embeddedTransactionManager = space.getContainer().getEmbeddedTransactionManager();
+        Transaction transaction = null;
+        try {
+            transaction = TransactionFactory.create(embeddedTransactionManager, Lease.FOREVER).transaction;
             cdcInfo = requestInfo.getCdcInfo();
             GSMessageTask.Mode mode = requestInfo.getMode();
             entry = requestInfo.getDocument();
