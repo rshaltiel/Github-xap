@@ -4061,7 +4061,7 @@ public class SpaceImpl extends AbstractService implements IRemoteSpace, IInterna
     }
 
     public void copyChunks(CopyChunksRequestInfo requestInfo) {
-        String step = "copy-chunks";
+        String step = Step.COPY_CHUNKS.toString();
         String key = "partition " + getPartitionIdOneBased();
 
         try {
@@ -4081,7 +4081,7 @@ public class SpaceImpl extends AbstractService implements IRemoteSpace, IInterna
     }
 
     public void drainOnScale(DrainRequestInfo requestInfo)  {
-        String step = "drain";
+        String step = Step.Drain.toString();
         String key = "partition " + getPartitionIdOneBased();
         try {
             ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.IN_PROGRESS.toString());
@@ -4097,7 +4097,7 @@ public class SpaceImpl extends AbstractService implements IRemoteSpace, IInterna
     }
 
     public void deleteChunks(DeleteChunksRequestInfo requestInfo)  {
-        String step = "delete-chunks";
+        String step = Step.DELETE_CHUNKS.toString();
         String key = "partition " + getPartitionIdOneBased();
         try {
             ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.IN_PROGRESS.toString());
