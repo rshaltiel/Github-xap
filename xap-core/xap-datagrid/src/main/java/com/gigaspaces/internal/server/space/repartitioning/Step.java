@@ -62,7 +62,9 @@ public enum Step {
             case "delete-chunks":
                 return Step.DELETE_CHUNKS;
             case "set-new-topology":
-                   return Step.INFORM_TOPOLOGY_CHANGE;
+                   return Step.SET_NEW_TOPOLOGY;
+            case "inform-topology-change":
+                return Step.INFORM_TOPOLOGY_CHANGE;
             case "unquiesce":
                 return Step.UNQUIESCE;
             default:
