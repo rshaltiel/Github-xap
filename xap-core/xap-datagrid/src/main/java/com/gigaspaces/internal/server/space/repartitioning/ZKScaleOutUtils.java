@@ -22,6 +22,10 @@ public class ZKScaleOutUtils {
         return getScaleOutPath(puName) + "/steps/" + step;
     }
 
+    public static String getStepDetails(AttributeStore attributeStore, String puName, String step, String key) throws IOException {
+        return attributeStore.get(ZKScaleOutUtils.getScaleStepsPath(puName, step) + "/" + key);
+    }
+
     public static void setScaleOutMetaData(AttributeStore attributeStore, String puName, String key, String value) throws IOException {
         attributeStore.set(ZKScaleOutUtils.getScaleOutPath(puName) + "/" + key, value);
     }
@@ -76,9 +80,5 @@ public class ZKScaleOutUtils {
         } catch (IOException e) {
         }
         return false;
-    }
-
-    public static String getStepDetails(AttributeStore attributeStore, String puName, String step, String key) throws IOException {
-        return attributeStore.get(ZKScaleOutUtils.getScaleStepsPath(puName, step) + "/" + key);
     }
 }
