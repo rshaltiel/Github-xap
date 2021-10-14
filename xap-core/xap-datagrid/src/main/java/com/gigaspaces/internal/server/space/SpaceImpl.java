@@ -4025,8 +4025,8 @@ public class SpaceImpl extends AbstractService implements IRemoteSpace, IInterna
         _demoteHandler.demote(maxSuspendTime, unit);
     }
 
-    public void waitForDrain(long timeoutMs, long minTimeToWait, boolean isComprehensive, Logger logger) throws TimeoutException {
-        WaitForDrainUtils.waitForDrain(this, timeoutMs, minTimeToWait, isComprehensive, logger);
+    public void waitForDrain(long timeoutMs, long minTimeToWait, boolean isBackupOnly, Logger logger) throws TimeoutException {
+        WaitForDrainUtils.waitForDrain(this, timeoutMs, minTimeToWait, isBackupOnly, logger);
     }
 
     public SuspendType addSpaceSuspendTypeListener(SuspendTypeChangedInternalListener listener) {
@@ -4085,7 +4085,7 @@ public class SpaceImpl extends AbstractService implements IRemoteSpace, IInterna
         String key = "partition " + getPartitionIdOneBased();
         try {
             ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.IN_PROGRESS.toString());
-            WaitForDrainUtils.waitForDrain(this, requestInfo.getTimeout(), requestInfo.getMinTimeToWait(), requestInfo.isComprehensive(), null);
+            WaitForDrainUtils.waitForDrain(this, requestInfo.getTimeout(), requestInfo.getMinTimeToWait(), requestInfo.isBackupOnly(), null);
             ZKScaleOutUtils.setStepIfPossible(attributeStore, _puName, step, key, Status.SUCCESS.toString());
             _logger.info("Instance " + _spaceMemberName + " drained successfully");
         } catch (TimeoutException e) {

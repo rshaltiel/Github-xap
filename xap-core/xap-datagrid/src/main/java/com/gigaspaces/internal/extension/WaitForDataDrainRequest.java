@@ -12,24 +12,24 @@ public class WaitForDataDrainRequest implements SpaceRequestInfo {
     static final long serialVersionUID = -216455811647301189L;
     private long timeout;
     private long minTimeToWait;
-    private boolean isComprehensive;
+    private boolean isBackupOnly;
     private SpaceContext context;
 
     public WaitForDataDrainRequest() {
     }
 
-    public WaitForDataDrainRequest(long timeout, long minTimeToWait, boolean isComprehensive) {
+    public WaitForDataDrainRequest(long timeout, long minTimeToWait, boolean isBackupOnly) {
         this.timeout = timeout;
         this.minTimeToWait = minTimeToWait;
-        this.isComprehensive = isComprehensive;
+        this.isBackupOnly = isBackupOnly;
     }
 
     public long getTimeout() {
         return timeout;
     }
 
-    public boolean isComprehensive() {
-        return isComprehensive;
+    public boolean isBackupOnly() {
+        return isBackupOnly;
     }
 
     @Override
@@ -50,13 +50,13 @@ public class WaitForDataDrainRequest implements SpaceRequestInfo {
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeLong(timeout);
         out.writeLong(minTimeToWait);
-        out.writeBoolean(isComprehensive);
+        out.writeBoolean(isBackupOnly);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         this.timeout = in.readLong();
         this.minTimeToWait = in.readLong();
-        this.isComprehensive = in.readBoolean();
+        this.isBackupOnly = in.readBoolean();
     }
 }
