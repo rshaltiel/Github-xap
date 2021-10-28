@@ -21,7 +21,7 @@ public class DIHProjectGenerator {
     }
 
 
-    public static void generate(DIHProjectPropertiesOverrides overrideProperties) {
+    public static String generate(DIHProjectPropertiesOverrides overrideProperties) {
         List<String> classNames = overrideProperties.getDocuments() == null ? Collections.emptyList() :
                 overrideProperties.getDocuments().stream().map(doc -> doc.getClassName() + "Document").collect(Collectors.toList());
         HashMap<String, Object> properties = new HashMap<>();
@@ -56,6 +56,7 @@ public class DIHProjectGenerator {
             }
 
             generateDocuments(overrideProperties, consumerProjectTargetPath, pipelineRootFolderName);
+            return pipelineRootFolderName;
         } catch (IOException e) {
             throw new RuntimeException("Failed to generate DIH project", e);
         }
