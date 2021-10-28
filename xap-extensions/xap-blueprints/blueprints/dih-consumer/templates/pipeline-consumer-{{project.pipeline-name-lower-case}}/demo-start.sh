@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-GS_HOME=${GS_HOME=`(cd ../../; pwd )`}
+GS_HOME=${GS_HOME=`(cd ../../../; pwd )`}
 echo "GS_HOME = $GS_HOME"
 echo "Building consumer..."
 ./build.sh
