@@ -6,9 +6,9 @@ import com.gigaspaces.start.SystemLocations;
 import org.gigaspaces.blueprints.java.DocumentInfo;
 import org.gigaspaces.blueprints.java.dih.DIHProjectGenerator;
 import org.gigaspaces.blueprints.java.dih.DIHProjectPropertiesOverrides;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.After;
+import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,7 +25,7 @@ public class DIHProjectTestCase {
     private Path target;
 
     @Test
-    void generateProject() {
+    public void generateProject() {
         String projectPipelineName = "Foo";
         String projectVersion = "1.0";
         String kafkaSpaceName = "mySpace";
@@ -57,7 +56,7 @@ public class DIHProjectTestCase {
         }
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         if (target.toFile().exists()) {
             try {
