@@ -154,7 +154,12 @@
             <version>${spring.security.version}</version>
             <scope>compile</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>${spring.security.version}</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- other spring dependencies are with <scope>provided</scope> as managed by <dependencyManagement> below -->
         <dependency>
             <groupId>org.springframework</groupId>
