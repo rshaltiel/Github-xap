@@ -177,6 +177,10 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+        </dependency>
         <!--java ee jars-->
         <dependency>
             <groupId>com.sun.activation</groupId>
@@ -251,8 +255,13 @@
                 <version>4.1.70.Final</version>
             </dependency>
            <dependency>
-            <groupId>io.netty</groupId>
+                <groupId>io.netty</groupId>
                 <artifactId>netty-handler</artifactId>
+                <version>4.1.70.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-common</artifactId>
                 <version>4.1.70.Final</version>
             </dependency>
 
