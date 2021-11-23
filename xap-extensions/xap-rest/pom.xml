@@ -30,7 +30,7 @@
 
     <properties>
         <exclude.tests>nothing-to-exclude</exclude.tests>
-        <jsondoc-version>1.1.4</jsondoc-version>
+        <jsondoc-version>1.1.15</jsondoc-version>
     </properties>
     <dependencies>
         <dependency>
