@@ -34,6 +34,12 @@ public class InternalRDBMSManager {
         return internalRDBMS.getDiskSize();
     }
 
+//    public LongCounter getDiskSizeMetric() throws SAException, IOException{
+//        LongAdder longAdder = new LongAdder();
+//        longAdder.add(getDiskSize());
+//        return new LongCounter(longAdder);
+//    }
+
     public long getFreeSpaceSize() throws SAException, IOException{
         return internalRDBMS.getFreeSpaceSize();
     }

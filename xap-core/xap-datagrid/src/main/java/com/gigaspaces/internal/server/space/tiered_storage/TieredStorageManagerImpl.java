@@ -156,8 +156,14 @@ public class TieredStorageManagerImpl implements TieredStorageManager {
 
         InternalMetricRegistrator registratorForPrimary = (InternalMetricRegistrator) metricManager.createRegistrator(MetricConstants.SPACE_METRIC_NAME, createTags(_spaceImpl), dynamicTags);
 
-        registratorForPrimary.register( ("tiered-storage-read-tp"), getInternalStorage().getReadDisk());
+        registratorForPrimary.register(("tiered-storage-read-tp"), getInternalStorage().getReadDisk());
         registratorForPrimary.register("tiered-storage-write-tp", getInternalStorage().getWriteDisk());
+        registratorForPrimary.register("tiered-storage-disk-size", new Gauge<Long>() {
+            @Override
+            public Long getValue() throws Exception {
+                return getInternalStorage().getDiskSize();
+            }
+        });
         this.operationsRegistrator = registratorForPrimary;
     }
 
