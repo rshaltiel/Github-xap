@@ -30,11 +30,6 @@ public class ZKScaleOutUtils {
 
     public static void setScaleOutMetaData(AttributeStore attributeStore, String puName, String key, String value) throws IOException {
         attributeStore.set(ZKScaleOutUtils.getScaleOutPath(puName) + "/" + key, value);
-        if("requestId".equals(key)){
-            logger.info("++++++++++++++set meta data: " + key );
-            String result = getScaleOutMetaData(attributeStore, puName, "requestId");
-            logger.info("+++++++++++++++++++=result is: " + result);
-        }
     }
 
     public static String getScaleOutMetaData(AttributeStore attributeStore, String puName, String key) throws IOException {
@@ -133,7 +128,7 @@ public class ZKScaleOutUtils {
             boolean isScaling = isScaleInProgress(attributeStore, puName);
             if(isScaling){
                 logger.info("****************request id is " + getScaleOutMetaData(attributeStore, puName, "requestId"));
-                if(requestId.equals("1")){
+                if(requestId.equals(getScaleOutMetaData(attributeStore, puName, "requestId"))){
                     ScaleRequestInfo requestInfo = new ScaleRequestInfo();
                     requestInfo.setId(requestId);
                     requestInfo.setPuName(puName);
@@ -148,6 +143,7 @@ public class ZKScaleOutUtils {
                 }
             }
         }
+        logger.info("++++++++++++++=return null");
         return null;
     }
 }
