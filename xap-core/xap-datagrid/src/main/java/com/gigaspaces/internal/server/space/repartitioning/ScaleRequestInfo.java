@@ -4,8 +4,6 @@ public class ScaleRequestInfo {
     private String id;
     private String puName;
     private String description;
-    private Throwable error;
-    private String completedAt;
     private boolean isCanceled;
     private String status;
     private boolean isCompleted;
@@ -13,13 +11,11 @@ public class ScaleRequestInfo {
     public ScaleRequestInfo() {
     }
 
-    public ScaleRequestInfo(String id, String puName, String description, Throwable error, String completedAt,
+    public ScaleRequestInfo(String id, String puName, String description,
                             boolean isCanceled, String status, boolean isCompleted) {
         this.id = id;
         this.puName = puName;
         this.description = description;
-        this.error = error;
-        this.completedAt = completedAt;
         this.isCanceled = isCanceled;
         this.status = status;
         this.isCompleted = isCompleted;
@@ -39,22 +35,6 @@ public class ScaleRequestInfo {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Throwable getError() {
-        return error;
-    }
-
-    public void setError(Throwable error) {
-        this.error = error;
-    }
-
-    public String getCompletedAt() {
-        return completedAt;
-    }
-
-    public void setCompletedAt(String completedAt) {
-        this.completedAt = completedAt;
     }
 
     public boolean isCanceled() {
@@ -95,8 +75,6 @@ public class ScaleRequestInfo {
                 "id='" + id + '\'' +
                 ", puName='" + puName + '\'' +
                 ", description='" + description + '\'' +
-                ", error=" + error +
-                ", completedAt='" + completedAt + '\'' +
                 ", isCanceled=" + isCanceled +
                 ", status='" + status + '\'' +
                 ", isCompleted=" + isCompleted +

@@ -3,6 +3,8 @@ package com.gigaspaces.internal.server.space.repartitioning;
 import com.gigaspaces.admin.quiesce.QuiesceToken;
 import com.gigaspaces.attribute_store.AttributeStore;
 import com.gigaspaces.internal.cluster.ClusterTopologyState;
+import com.gigaspaces.internal.server.space.ZookeeperClient;
+import com.gigaspaces.internal.server.space.ZookeeperTopologyHandler;
 import com.gigaspaces.internal.zookeeper.ZNodePathFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +32,6 @@ public class ZKScaleOutUtils {
 
     public static void setScaleOutMetaData(AttributeStore attributeStore, String puName, String key, String value) throws IOException {
         attributeStore.set(ZKScaleOutUtils.getScaleOutPath(puName) + "/" + key, value);
-        logger.info("++++++++++++++=set meta data: " + key );
-        if("requestId".equals(key)){
-            String result = getScaleOutMetaData(attributeStore, puName, "requestId");
-            logger.info("+++++++++++++++++++=result is: " + result);
-        } else{
-            String result2 = getScaleOutMetaData(attributeStore, puName, "requestId");
-            logger.info("+++++++++++++++++++result is: " + result2);
-        }
     }
 
     public static String getScaleOutMetaData(AttributeStore attributeStore, String puName, String key) throws IOException {
@@ -80,7 +74,7 @@ public class ZKScaleOutUtils {
        try {
            String status = getScaleOutMetaData(attributeStore, puName, "scale-status");
            if (status != null){
-               return Status.IN_PROGRESS.getStatus().equals(status);
+               return Status.IN_PROGRESS.getStatus().equals(status) || Status.STARTED.getStatus().equals(status);
            }
        } catch (IOException e) {
        }
@@ -133,29 +127,37 @@ public class ZKScaleOutUtils {
     public static ScaleRequestInfo getScaleRequestInfoIfExist(AttributeStore attributeStore, String requestId,
                                                               List<String> pusName) throws IOException {
         for(String puName: pusName){
-            logger.info("++++++++++++++++++++on get scale out request info if exist");
-            logger.info("+++++++++++++++++++++++scale status? " + getScaleOutMetaData(attributeStore, puName, "scale-status").toString());
-            boolean isScaling = isScaleInProgress(attributeStore, puName);
-            logger.info("+++++++++++++++++++++++scale is in progress? " + isScaling);
-            if(isScaling){
-                logger.info("++++++++++++request id: " + requestId);
-                String result = getScaleOutMetaData(attributeStore, puName, "requestId");
-               logger.info("++++++++++++get scale out meta data: " + result);
+            logger.info("****************request id is " + getScaleOutMetaData(attributeStore, puName, "requestId"));
                 if(requestId.equals(getScaleOutMetaData(attributeStore, puName, "requestId"))){
                     ScaleRequestInfo requestInfo = new ScaleRequestInfo();
                     requestInfo.setId(requestId);
+                    requestInfo.setPuName(puName);
+                    //String status = getScaleOutMetaData(attributeStore, puName, "scale-status");
                     requestInfo.setCanceled(checkIfScaleIsCanceled(attributeStore, requestId));
-                    if (requestInfo.isCanceled()){
-                        requestInfo.setDescription("Cancelling horizontal scale request for processing unit [" + puName + "]");
-                    } else {
-                        requestInfo.setDescription("Scale partitions of processing unit [" + puName +"]");
-                    }
-                    logger.info("++++++++++++++++++++request info: " + requestInfo);
+                    requestInfo.setCompleted(!isScaleInProgress(attributeStore, puName));
+                    /*if (Status.IN_PROGRESS.getStatus().equals(status) || Status.STARTED.getStatus().equals(status)) {
+
+                        if (requestInfo.isCanceled()){
+                            requestInfo.setStatus("cancelling");
+                            requestInfo.setDescription("Cancelling horizontal scale request for processing unit [" + puName + "]");
+                        } else {
+                            requestInfo.setStatus("running");
+                            requestInfo.setDescription("Scale partitions of processing unit [" + puName +"]");
+                        }
+                    } else if(Status.SUCCESS.getStatus().equals(status)){
+                        requestInfo.setStatus("success");
+                        requestInfo.setDescription("Scale partitions of processing unit [" + puName +"] successfully");
+                    } else if(Status.CANCELLED_SUCCESSFULLY.getStatus().equals(status)){
+                        requestInfo.setStatus("success");
+                        requestInfo.setDescription("Scale partitions of processing unit [" + puName +"] cancelled successfully");//todo
+                    } else {//fail
+                        //todo- case of failure
+                    }*/
+                    logger.info("++++++++++++++=return request info" +requestInfo);
                     return requestInfo;
                 }
             }
-        }
-        logger.info("++++++++++++++++++++returning null");
+        logger.info("++++++++++++++=return null");
         return null;
     }
 }
