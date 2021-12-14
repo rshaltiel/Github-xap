@@ -6,6 +6,7 @@ import com.gigaspaces.internal.server.space.metadata.SpaceTypeManager;
 import com.gigaspaces.internal.server.storage.IEntryHolder;
 import com.gigaspaces.internal.server.storage.ITemplateHolder;
 import com.gigaspaces.metrics.LongCounter;
+import com.gigaspaces.time.SystemTime;
 import com.j_spaces.core.cache.CacheManager;
 import com.j_spaces.core.cache.InitialLoadInfo;
 import com.j_spaces.core.cache.context.Context;
@@ -21,6 +22,8 @@ public class InternalRDBMSManager {
     private final LongCounter readDisk = new LongCounter();
     private final LongCounter writeDisk = new LongCounter();
     private final TypesMetaData metaData = new TypesMetaData();
+    private long diskReadAvg = 0;
+    private long diskWriteAvg = 0;
 
     public InternalRDBMSManager(InternalRDBMS internalRDBMS) {
         this.internalRDBMS = internalRDBMS;
@@ -60,8 +63,12 @@ public class InternalRDBMSManager {
      */
     public void insertEntry(Context context, IEntryHolder entryHolder, CacheManager.InitialLoadOrigin initialLoadOrigin) throws SAException{
         if(initialLoadOrigin != CacheManager.InitialLoadOrigin.FROM_TIERED_STORAGE && context.isDiskEntry() && entryHolder.getXidOriginatedTransaction() == null) {
+            long startTime = SystemTime.timeMillis();
             internalRDBMS.insertEntry(context, entryHolder);
+            long duration = SystemTime.timeMillis() - startTime;
+            diskWriteAvg = (diskWriteAvg * writeDisk.getCount()) + duration;
             writeDisk.inc();
+            diskWriteAvg = diskWriteAvg / writeDisk.getCount();
         }
         String type = entryHolder.getServerTypeDesc().getTypeName();
         metaData.increaseCounterMap(type);
@@ -114,30 +121,39 @@ public class InternalRDBMSManager {
     }
 
     public IEntryHolder getEntryById(Context context, String typeName, Object id, ITemplateHolder templateHolder) throws SAException{
+        long startTime = SystemTime.timeMillis();
         IEntryHolder entryById = internalRDBMS.getEntryById(context, typeName, id);
-
+        long duration = SystemTime.timeMillis() - startTime;
+        diskReadAvg = (diskReadAvg * readDisk.getCount()) + duration;
         if (templateHolder != null && templateHolder.isReadOperation()){
             readDisk.inc();
         }
+        diskReadAvg = diskReadAvg / readDisk.getCount();
 
         return entryById;
     }
 
     public IEntryHolder getEntryByUID(Context context, String typeName, String uid, ITemplateHolder templateHolder) throws SAException{
+        long startTime = SystemTime.timeMillis();
         IEntryHolder entryByUID = internalRDBMS.getEntryByUID(context, typeName, uid);
-
+        long duration = SystemTime.timeMillis() - startTime;
+        diskReadAvg = (diskReadAvg * readDisk.getCount()) + duration;
         if (templateHolder != null && templateHolder.isReadOperation()){
             readDisk.inc();
         }
+        diskReadAvg = diskReadAvg / readDisk.getCount();
         return entryByUID;
     }
 
     public ISAdapterIterator<IEntryHolder> makeEntriesIter(Context context, String typeName, ITemplateHolder templateHolder) throws SAException{
+        long startTime = SystemTime.timeMillis();
         ISAdapterIterator<IEntryHolder> iEntryHolderISAdapterIterator = internalRDBMS.makeEntriesIter(context, typeName, templateHolder);
-
+        long duration = SystemTime.timeMillis() - startTime;
+        diskReadAvg = (diskReadAvg * readDisk.getCount()) + duration;
         if (templateHolder != null && templateHolder.isReadOperation() && !context.isDisableTieredStorageMetric()){
             readDisk.inc();
         }
+        diskReadAvg = diskReadAvg / readDisk.getCount();
 
         return iEntryHolderISAdapterIterator;
     }
@@ -156,6 +172,14 @@ public class InternalRDBMSManager {
 
     public LongCounter getWriteDisk() {
         return writeDisk;
+    }
+
+    public long getDiskReadAvg() {
+        return diskReadAvg;
+    }
+
+    public long getDiskWriteAvg() {
+        return diskWriteAvg;
     }
 
     public void deleteData() throws SAException {
