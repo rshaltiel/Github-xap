@@ -30,17 +30,15 @@ public class ZKScaleOutUtils {
 
     public static void setScaleOutMetaData(AttributeStore attributeStore, String puName, String key, String value) throws IOException {
         attributeStore.set(ZKScaleOutUtils.getScaleOutPath(puName) + "/" + key, value);
-        logger.info("++++++++++++++=set meta data: " + key );
         if("requestId".equals(key)){
+            logger.info("++++++++++++++set meta data: " + key );
             String result = getScaleOutMetaData(attributeStore, puName, "requestId");
             logger.info("+++++++++++++++++++=result is: " + result);
-        } else{
-            String result2 = getScaleOutMetaData(attributeStore, puName, "requestId");
-            logger.info("+++++++++++++++++++result is: " + result2);
         }
     }
 
     public static String getScaleOutMetaData(AttributeStore attributeStore, String puName, String key) throws IOException {
+
         return attributeStore.get(ZKScaleOutUtils.getScaleOutPath(puName) + "/" + key);
     }
 
@@ -133,15 +131,10 @@ public class ZKScaleOutUtils {
     public static ScaleRequestInfo getScaleRequestInfoIfExist(AttributeStore attributeStore, String requestId,
                                                               List<String> pusName) throws IOException {
         for(String puName: pusName){
-            logger.info("++++++++++++++++++++on get scale out request info if exist");
-            logger.info("+++++++++++++++++++++++scale status? " + getScaleOutMetaData(attributeStore, puName, "scale-status").toString());
             boolean isScaling = isScaleInProgress(attributeStore, puName);
-            logger.info("+++++++++++++++++++++++scale is in progress? " + isScaling);
             if(isScaling){
-                logger.info("++++++++++++request id: " + requestId);
-                String result = getScaleOutMetaData(attributeStore, puName, "requestId");
-               logger.info("++++++++++++get scale out meta data: " + result);
-                if(requestId.equals(getScaleOutMetaData(attributeStore, puName, "requestId"))){
+                logger.info("****************request id is " + getScaleOutMetaData(attributeStore, puName, "requestId"));
+                if(requestId.equals("1")){
                     ScaleRequestInfo requestInfo = new ScaleRequestInfo();
                     requestInfo.setId(requestId);
                     requestInfo.setCanceled(checkIfScaleIsCanceled(attributeStore, requestId));
@@ -150,12 +143,10 @@ public class ZKScaleOutUtils {
                     } else {
                         requestInfo.setDescription("Scale partitions of processing unit [" + puName +"]");
                     }
-                    logger.info("++++++++++++++++++++request info: " + requestInfo);
                     return requestInfo;
                 }
             }
         }
-        logger.info("++++++++++++++++++++returning null");
         return null;
     }
 }
