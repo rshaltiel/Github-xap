@@ -137,12 +137,14 @@ public class ZKScaleOutUtils {
                 if(requestId.equals("1")){
                     ScaleRequestInfo requestInfo = new ScaleRequestInfo();
                     requestInfo.setId(requestId);
+                    requestInfo.setPuName(puName);
                     requestInfo.setCanceled(checkIfScaleIsCanceled(attributeStore, requestId));
                     if (requestInfo.isCanceled()){
                         requestInfo.setDescription("Cancelling horizontal scale request for processing unit [" + puName + "]");
                     } else {
                         requestInfo.setDescription("Scale partitions of processing unit [" + puName +"]");
                     }
+                    logger.info("++++++++++++++=return request info" +requestInfo);
                     return requestInfo;
                 }
             }
