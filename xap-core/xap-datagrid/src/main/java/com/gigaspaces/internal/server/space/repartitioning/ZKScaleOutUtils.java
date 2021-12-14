@@ -38,7 +38,6 @@ public class ZKScaleOutUtils {
     }
 
     public static String getScaleOutMetaData(AttributeStore attributeStore, String puName, String key) throws IOException {
-
         return attributeStore.get(ZKScaleOutUtils.getScaleOutPath(puName) + "/" + key);
     }
 
