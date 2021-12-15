@@ -65,19 +65,19 @@ public class ZKScaleOutUtils {
             attributeStore.set(ZKScaleOutUtils.getScaleStepsPath(puName, step) + "/" + key, value);
             return true;
         } catch (IOException e){
-           logger.warn("Failed to set on Zookeeper: " + key + " " + value , e);
-           return false;
+            logger.warn("Failed to set on Zookeeper: " + key + " " + value , e);
+            return false;
         }
     }
 
     public static boolean isScaleInProgress(AttributeStore attributeStore, String puName){//include cancel status
-       try {
-           String status = getScaleOutMetaData(attributeStore, puName, "scale-status");
-           if (status != null){
-               return Status.IN_PROGRESS.getStatus().equals(status) || Status.STARTED.getStatus().equals(status);
-           }
-       } catch (IOException e) {
-       }
+        try {
+            String status = getScaleOutMetaData(attributeStore, puName, "scale-status");
+            if (status != null){
+                return Status.IN_PROGRESS.getStatus().equals(status) || Status.STARTED.getStatus().equals(status);
+            }
+        } catch (IOException e) {
+        }
         return false;
     }
 
@@ -128,38 +128,35 @@ public class ZKScaleOutUtils {
                                                               List<String> pusName) throws IOException {
         for(String puName: pusName){
             logger.info("****************request id is " + getScaleOutMetaData(attributeStore, puName, "requestId"));
-                if(requestId.equals(getScaleOutMetaData(attributeStore, puName, "requestId"))){
-                    if(isScaleInProgress(attributeStore, puName)){
-                        ScaleRequestInfo requestInfo = new ScaleRequestInfo();
-                        requestInfo.setId(requestId);
-                        requestInfo.setPuName(puName);
-                        //String status = getScaleOutMetaData(attributeStore, puName, "scale-status");
-                        requestInfo.setCanceled(checkIfScaleIsCanceled(attributeStore, requestId));
-                        requestInfo.setCompleted(!isScaleInProgress(attributeStore, puName));
-                        logger.info("++++++++++++++return request info" +requestInfo);
-                        return requestInfo;
-                    }
-                    /*if (Status.IN_PROGRESS.getStatus().equals(status) || Status.STARTED.getStatus().equals(status)) {
-
-                        if (requestInfo.isCanceled()){
-                            requestInfo.setStatus("cancelling");
-                            requestInfo.setDescription("Cancelling horizontal scale request for processing unit [" + puName + "]");
-                        } else {
-                            requestInfo.setStatus("running");
-                            requestInfo.setDescription("Scale partitions of processing unit [" + puName +"]");
-                        }
-                    } else if(Status.SUCCESS.getStatus().equals(status)){
-                        requestInfo.setStatus("success");
-                        requestInfo.setDescription("Scale partitions of processing unit [" + puName +"] successfully");
-                    } else if(Status.CANCELLED_SUCCESSFULLY.getStatus().equals(status)){
-                        requestInfo.setStatus("success");
-                        requestInfo.setDescription("Scale partitions of processing unit [" + puName +"] cancelled successfully");//todo
-                    } else {//fail
-
-                    }*/
-                }
+            if(requestId.equals(getScaleOutMetaData(attributeStore, puName, "requestId"))){
+                ScaleRequestInfo requestInfo = new ScaleRequestInfo();
+                requestInfo.setId(requestId);
+                requestInfo.setPuName(puName);
+                requestInfo.setCanceled(checkIfScaleIsCanceled(attributeStore, requestId));
+                requestInfo.setCompleted(!isScaleInProgress(attributeStore, puName));
+                requestInfo.setDescription(getScaleRequestDescription(attributeStore, requestInfo));
+                logger.info("++++++++++++++return request info" +requestInfo);
+                return requestInfo;
             }
+        }
         logger.info("++++++++++++++return null");
         return null;
+    }
+
+    private static String getScaleRequestDescription(AttributeStore attributeStore, ScaleRequestInfo requestInfo) throws IOException {
+        String puName = requestInfo.getPuName();
+        String status = getScaleOutMetaData(attributeStore, puName, "scale-status");
+        if (Status.IN_PROGRESS.getStatus().equals(status) || Status.STARTED.getStatus().equals(status) ) {
+            if (requestInfo.isCanceled()){
+                return "Cancelling horizontal scale request for processing unit [" + puName + "]";
+            } else {
+                return "Scale partitions of processing unit [" + puName +"]";
+            }
+        } else if(Status.SUCCESS.getStatus().equals(status)){
+            return "Scale partitions of processing unit [" + puName +"] successfully";
+        } else if(Status.CANCELLED_SUCCESSFULLY.getStatus().equals(status)){
+            return "Scale partitions of processing unit [" + puName +"] cancelled successfully";
+        }
+        return "";
     }
 }
