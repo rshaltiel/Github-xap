@@ -3,8 +3,6 @@ package com.gigaspaces.internal.server.space.repartitioning;
 import com.gigaspaces.admin.quiesce.QuiesceToken;
 import com.gigaspaces.attribute_store.AttributeStore;
 import com.gigaspaces.internal.cluster.ClusterTopologyState;
-import com.gigaspaces.internal.server.space.ZookeeperClient;
-import com.gigaspaces.internal.server.space.ZookeeperTopologyHandler;
 import com.gigaspaces.internal.zookeeper.ZNodePathFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +72,7 @@ public class ZKScaleOutUtils {
         try {
             String status = getScaleOutMetaData(attributeStore, puName, "scale-status");
             if (status != null){
-                return Status.IN_PROGRESS.getStatus().equals(status) || Status.STARTED.getStatus().equals(status);
+                return Status.IN_PROGRESS.getStatus().equals(status);
             }
         } catch (IOException e) {
         }
@@ -132,9 +130,7 @@ public class ZKScaleOutUtils {
                 ScaleRequestInfo requestInfo = new ScaleRequestInfo();
                 requestInfo.setId(requestId);
                 requestInfo.setPuName(puName);
-                requestInfo.setCanceled(checkIfScaleIsCanceled(attributeStore, requestId));
-                requestInfo.setCompleted(!isScaleInProgress(attributeStore, puName));
-                requestInfo.setDescription(getScaleRequestDescription(attributeStore, requestInfo));
+                setScaleRequestDetails(attributeStore, requestInfo);
                 logger.info("++++++++++++++return request info" +requestInfo);
                 return requestInfo;
             }
@@ -143,20 +139,24 @@ public class ZKScaleOutUtils {
         return null;
     }
 
-    private static String getScaleRequestDescription(AttributeStore attributeStore, ScaleRequestInfo requestInfo) throws IOException {
+    private static void setScaleRequestDetails(AttributeStore attributeStore, ScaleRequestInfo requestInfo) throws IOException {
         String puName = requestInfo.getPuName();
         String status = getScaleOutMetaData(attributeStore, puName, "scale-status");
+        boolean isCanceled = checkIfScaleIsCanceled(attributeStore, puName);
         if (Status.IN_PROGRESS.getStatus().equals(status) || Status.STARTED.getStatus().equals(status) ) {
-            if (requestInfo.isCanceled()){
-                return "Cancelling horizontal scale request for processing unit [" + puName + "]";
+            if (isCanceled){
+                requestInfo.setCanceled(true);
+                requestInfo.setDescription("Cancelling horizontal scale request for processing unit [" + puName + "]");
             } else {
-                return "Scale partitions of processing unit [" + puName +"]";
+                requestInfo.setDescription("Scale partitions of processing unit [" + puName +"]");
             }
-        } else if(Status.SUCCESS.getStatus().equals(status)){
-            return "Scale partitions of processing unit [" + puName +"] successfully";
-        } else if(Status.CANCELLED_SUCCESSFULLY.getStatus().equals(status)){
-            return "Scale partitions of processing unit [" + puName +"] cancelled successfully";
+        } else if (Status.SUCCESS.getStatus().equals(status)){
+            requestInfo.setCompleted(true);
+            requestInfo.setDescription("Scale partitions of processing unit [" + puName +"] successfully");
+        } else if (Status.CANCELLED_SUCCESSFULLY.getStatus().equals(status)){
+            requestInfo.setCompleted(true);
+            requestInfo.setCanceled(true);
+            requestInfo.setDescription("Scale partitions of processing unit [" + puName +"] cancelled successfully");
         }
-        return "";
     }
 }
