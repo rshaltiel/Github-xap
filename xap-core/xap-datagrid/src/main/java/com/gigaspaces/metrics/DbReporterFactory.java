@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * @author Evgeny Fisher
  * @since 16.2.0
  */
-public interface DbConnectionMetricReporterFactory {
+public interface DbReporterFactory {
 
     TimeUnit getTimePrecision();
 

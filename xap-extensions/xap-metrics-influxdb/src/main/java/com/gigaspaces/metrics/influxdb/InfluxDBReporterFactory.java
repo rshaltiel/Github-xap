@@ -17,7 +17,7 @@
 package com.gigaspaces.metrics.influxdb;
 
 import com.gigaspaces.internal.utils.StringUtils;
-import com.gigaspaces.metrics.DbConnectionMetricReporterFactory;
+import com.gigaspaces.metrics.DbReporterFactory;
 import com.gigaspaces.metrics.MetricReporter;
 import com.gigaspaces.metrics.MetricReporterFactory;
 
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * @author Barak Bar Orion
  * @since 10.1
  */
-public class InfluxDBReporterFactory extends MetricReporterFactory<MetricReporter> implements DbConnectionMetricReporterFactory {
+public class InfluxDBReporterFactory extends MetricReporterFactory<MetricReporter> implements DbReporterFactory {
 
     // Default max length is UDP max packet length (http://en.wikipedia.org/wiki/User_Datagram_Protocol)
     public static final int DEFAULT_MAX_REPORT_LENGTH = 65507;

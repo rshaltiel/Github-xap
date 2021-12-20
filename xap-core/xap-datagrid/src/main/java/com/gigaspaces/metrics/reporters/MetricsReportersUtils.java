@@ -1,7 +1,7 @@
 package com.gigaspaces.metrics.reporters;
 
 import com.gigaspaces.internal.utils.StringUtils;
-import com.gigaspaces.metrics.DbConnectionMetricReporterFactory;
+import com.gigaspaces.metrics.DbReporterFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,11 +15,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class MetricsReportersUtils {
 
-    public static URL toInfluxDbUrl(String operationName, String encodedQuery, DbConnectionMetricReporterFactory factory) {
+    public static URL toInfluxDbUrl(String operationName, String encodedQuery, DbReporterFactory factory) {
         return toInfluxDbUrl(operationName, encodedQuery, factory, Collections.emptyMap());
     }
 
-    public static URL toInfluxDbUrl(String operationName, String encodedQuery, DbConnectionMetricReporterFactory factory, Map<String,String> parameters) {
+    public static URL toInfluxDbUrl(String operationName, String encodedQuery, DbReporterFactory factory, Map<String,String> parameters) {
         // See https://influxdb.com/docs/v0.9/guides/writing_data.html
         // "http://localhost:8086/write?db=db1");
         try {
