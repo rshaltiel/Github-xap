@@ -126,7 +126,7 @@ public class CliExecutor {
             System.err.println(formatAnsi("@|bold,fg(yellow) [TIMEOUT] " + toString(e, false) + "|@"));
         } else {
             String envVarKey = "CLI_VERBOSE";
-            boolean verbose = Boolean.parseBoolean(GsEnv.get(envVarKey, "false"));
+            boolean verbose = true;//Boolean.parseBoolean(GsEnv.get(envVarKey, Boolean.TRUE.toString()));
             System.err.println(formatAnsi("@|bold,fg(red) [ERROR] " + toString(e, verbose) + "|@"));
             if (!verbose) {
                 System.err.println(formatAnsi("@|bold - For additional information set the " + GsEnv.keyOrDefault(envVarKey) + " environment variable to true.|@"));
