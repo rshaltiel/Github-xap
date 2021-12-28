@@ -219,7 +219,6 @@ public class XapManagerClusterInfo implements ManagerClusterInfo, SmartExternali
     }
 
     private static String initZookeeperConnectionString(Collection<ManagerInstanceInfo> managers, String port) {
-        logger.info("++++++++++++++++++++on init zookeeper connection string");
         if (managers.isEmpty())
             return null;
         StringJoiner sj = new StringJoiner(",");
