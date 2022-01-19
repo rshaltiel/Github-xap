@@ -31,11 +31,14 @@ public class MultiTypedRDBMSISIterator implements ISAdapterIterator<IEntryHolder
             return null;
         }
 
+        boolean newlyCreatedTypeIterator = false;
         if (currentTypeIterator == null) {
             currentTypeIterator = createNextTypeIterator();
             if (currentTypeIterator == null) {
                 finished = true;
                 return null;
+            } else{
+                newlyCreatedTypeIterator = true;
             }
         }
 
@@ -50,6 +53,9 @@ public class MultiTypedRDBMSISIterator implements ISAdapterIterator<IEntryHolder
                 return next();
             }
         } else {
+            if (newlyCreatedTypeIterator && templateHolder != null && templateHolder.isReadOperation() && !context.isDisableTieredStorageMetric()){
+                internalRDBMS.getReadDisk().inc();
+            }
             return next;
         }
     }
