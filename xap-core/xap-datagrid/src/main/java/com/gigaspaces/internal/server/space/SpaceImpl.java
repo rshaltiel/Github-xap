@@ -1710,7 +1710,9 @@ public class SpaceImpl extends AbstractService implements IRemoteSpace, IInterna
                     leaderSelectorHandler = new LusBasedSelectorHandler(createSecuredProxy());
                     leaderSelectorHandler.initialize(leaderSelectorHandlerConfig);
                 } else {
-                    waitForLeaderIfNeeded();
+                    if (this._engine.isTieredStorage()) {
+                        waitForLeaderIfNeeded();
+                    }
                     leaderSelectorHandler = createZooKeeperLeaderSelector();
                     leaderSelectorHandler.initialize(leaderSelectorHandlerConfig);
                 }
